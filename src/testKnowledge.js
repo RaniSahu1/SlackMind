@@ -14,6 +14,7 @@ Redis Cloud, Pinecone, OpenRouter, and Gemini.
 await addKnowledge(testKnowledge, {
   source: "test-document",
   type: "documentation",
+  visibility: "public",
 });
 
 console.log("✅ Test knowledge inserted");

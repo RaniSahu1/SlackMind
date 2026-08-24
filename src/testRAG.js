@@ -4,8 +4,11 @@ import { searchKnowledge } from "./services/retrievalService.js";
 
 import { generateRAGResponse } from "./services/aiService.js";
 
+// const question =
+//   "What technologies does SlackMind use?";
+
 const question =
-  "What technologies does SlackMind use?";
+  "What is React and how does it work?";
 
 const knowledge =
   await searchKnowledge(question);
@@ -16,7 +19,7 @@ console.dir(knowledge, { depth: null });
 const answer =
   await generateRAGResponse(
     question,
-    knowledge
+    knowledge,[]
   );
 
 console.log("\n🤖 AI Answer:");
