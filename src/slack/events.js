@@ -23,10 +23,21 @@ slackApp.message(async ({ message, say }) => {
     const conversationHistory =
     await getConversation(conversationId);
 
-    //  Search relevant knowledge
-  const knowledge =
-    await searchKnowledge(userMessage, message.user, message.channel);
+    const retrievalQuery = conversationHistory
+  .slice(-4)
+  .map(
+    (message) =>
+      `${message.role}: ${message.content}`
+  )
+  .join("\n");
 
+// Search relevant knowledge
+const knowledge =
+  await searchKnowledge(
+    `${retrievalQuery}\ncurrent question: ${userMessage}`,
+    message.user,
+    message.channel
+  );
   console.log(
     "🔍 Retrieved knowledge:",
     knowledge.length

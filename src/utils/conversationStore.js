@@ -7,32 +7,51 @@ function getConversationKey(conversationId) {
 }
 
 export async function getConversation(conversationId) {
-  const key = getConversationKey(conversationId);
+  try {
+    const key = getConversationKey(conversationId);
 
-  const messages = await redisClient.get(key);
+    const messages = await redisClient.get(key);
 
-  if (!messages) {
+    if (!messages) {
+      return [];
+    }
+
+    return JSON.parse(messages);
+  } catch (error) {
+    console.error("⚠️ Failed to read conversation from Redis:", error);
+
+    // Redis unavailable → continue without conversation history
     return [];
   }
-
-  return JSON.parse(messages);
 }
 
 export async function addMessage(conversationId, role, content) {
-  const key = getConversationKey(conversationId);
+  try {
+    const key = getConversationKey(conversationId);
 
-  const messages = await getConversation(conversationId);
+    const messages = await getConversation(conversationId);
 
-  messages.push({
-    role,
-    content,
-  });
+    messages.push({
+      role,
+      content,
+    });
 
-  //  keep only recent messages
-  if (messages.length > MAX_MESSAGES) {
-    messages.splice(0, messages.length - MAX_MESSAGES);
+    // Keep only recent messages
+    if (messages.length > MAX_MESSAGES) {
+      messages.splice(0, messages.length - MAX_MESSAGES);
+    }
+
+    // Save conversation in Redis
+    await redisClient.set(
+      key,
+      JSON.stringify(messages)
+    );
+  } catch (error) {
+    console.error(
+      "⚠️ Failed to save conversation to Redis:",
+      error
+    );
+
+    // Do not break SlackMind if Redis is temporarily unavailable
   }
-
-  //  save conversation in Redis
-  await redisClient.set(key, JSON.stringify(messages));
 }
