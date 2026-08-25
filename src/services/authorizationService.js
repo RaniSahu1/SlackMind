@@ -1,12 +1,13 @@
 //  Authorization service
 
+
 export function getUserPermissions(userId) {
   // For now, every authenticated Slack user
   // can access public knowledge.
 
   return {
     userId,
-    allowedChannels: [],
+    allowedChannels: ["C_ALLOWED"],
     allowedUsers: [userId],
     canAccessPublic: true,
   };

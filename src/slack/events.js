@@ -25,7 +25,7 @@ slackApp.message(async ({ message, say }) => {
 
     //  Search relevant knowledge
   const knowledge =
-    await searchKnowledge(userMessage);
+    await searchKnowledge(userMessage, message.user, message.channel);
 
   console.log(
     "🔍 Retrieved knowledge:",
