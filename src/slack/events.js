@@ -2,9 +2,12 @@ import slackApp from "../config/slack.js";
 import {  generateRAGResponse, } from "../services/aiService.js";
 import { getConversation,addMessage,} from "../utils/conversationStore.js";
 import { searchKnowledge } from "../services/retrievalService.js";
-
+import {
+  checkRateLimit,
+} from "../utils/rateLimiter.js";
 
 slackApp.message(async ({ message, say }) => {
+  const requestStart = Date.now();
   console.log("Received message:", message);
 
   if (message.subtype) {
@@ -12,7 +15,27 @@ slackApp.message(async ({ message, say }) => {
   }
 
   const conversationId = `${message.channel}:${message.thread_ts || message.ts}`;
+const userId = message.user;
+const channelId = message.channel;
 
+const rateLimit =
+  await checkRateLimit(userId);
+
+console.log(
+  "🚦 Rate limit:",
+  rateLimit
+);
+
+if (!rateLimit.allowed) {
+  await say({
+    text:
+      "You have reached the request limit. Please try again in a minute.",
+    thread_ts:
+      message.thread_ts || message.ts,
+  });
+
+  return;
+}
 
   const userMessage = message.text.replace(/<@[^>]+>/g, "").trim();
 
@@ -20,9 +43,14 @@ slackApp.message(async ({ message, say }) => {
 // Save user's message in Redis
    await addMessage(conversationId, "user", userMessage);
 //Get conversation history
-    const conversationHistory =
-    await getConversation(conversationId);
+    const historyStart = Date.now();
 
+const conversationHistory =
+  await getConversation(conversationId);
+
+console.log(
+  `🧠 Redis history: ${Date.now() - historyStart}ms`
+);
     const retrievalQuery = conversationHistory
   .slice(-4)
   .map(
@@ -32,29 +60,48 @@ slackApp.message(async ({ message, say }) => {
   .join("\n");
 
 // Search relevant knowledge
+
+
+  const retrievalStart = Date.now();
+
 const knowledge =
   await searchKnowledge(
-    `${retrievalQuery}\ncurrent question: ${userMessage}`,
-    message.user,
-    message.channel
-  );
-  console.log(
-    "🔍 Retrieved knowledge:",
-    knowledge.length
+    userMessage,
+    userId,
+    channelId
   );
 
-  //  Generate answer using:
-  // conversation + knowledge + question
-  const aiResponse =
-    await generateRAGResponse(
-      userMessage,
-      knowledge,
-      conversationHistory
-    );
+console.log(
+  `🔎 Pinecone retrieval: ${Date.now() - retrievalStart}ms`
+);
+console.log(
+  "🔍 Retrieved knowledge:",
+  knowledge.length
+);
+
+  //  Generate answer using: conversation + knowledge + question
+  const aiStart = Date.now();
+
+const aiResponse =
+  await generateRAGResponse(
+    userMessage,
+    knowledge,
+    conversationHistory
+  );
+
+console.log(
+  `🤖 AI generation: ${Date.now() - aiStart}ms`
+);
 
     
 
     await addMessage(conversationId, "assistant", aiResponse);
+
+    const responseTime = Date.now() - requestStart;
+
+console.log(
+  `⏱️ SlackMind response time: ${responseTime}ms`
+);
 
     await say({
       text: aiResponse,

@@ -77,10 +77,12 @@ export async function generateRAGResponse(
   knowledge,
   conversationHistory
 ) {
-  // No authorized/relevant knowledge
-  if (!knowledge || knowledge.length === 0) {
+  // No retrieved knowledge We can still use conversation history for follow-up questions.
+if (!knowledge || knowledge.length === 0) {
+  if (!conversationHistory || conversationHistory.length === 0) {
     return "I don't have access to relevant knowledge for this question.";
   }
+}
 
   // Extract retrieved knowledge
   const context = knowledge

@@ -6,10 +6,25 @@ import {
   getUserPermissions,
 } from "./authorizationService.js";
 
+import {
+  getCachedKnowledge,
+  setCachedKnowledge,
+} from "../utils/retrievalCache.js";
+
 export async function searchKnowledge(
   query,
   userId,channelId
 ) {
+  const cachedKnowledge =
+  await getCachedKnowledge(
+    query,
+    userId,
+    channelId
+  );
+
+if (cachedKnowledge !== null) {
+  return cachedKnowledge;
+}
  
   const permissions =
     getUserPermissions(userId);
@@ -42,10 +57,11 @@ export async function searchKnowledge(
     },
   });
   
+  const pineconeStart = Date.now();
   const results =
     await knowledgeIndex.searchRecords({
       query: {
-        topK: 3,
+        topK: 5,
 
         inputs: {
           text: query,
@@ -66,11 +82,22 @@ export async function searchKnowledge(
         "allowedChannels",
       ],
     });
-
+console.log(
+  `🌲 Pinecone API call: ${Date.now() - pineconeStart}ms`
+);
 
   const hits = results.result.hits;
 
-return hits.filter(
+const filteredHits = hits.filter(
   (hit) => (hit._score ?? 0) >= 0.20
 );
+
+await setCachedKnowledge(
+  query,
+  userId,
+  channelId,
+  filteredHits
+);
+
+return filteredHits;
 }
