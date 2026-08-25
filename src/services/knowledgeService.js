@@ -39,3 +39,28 @@ export async function addDocumentChunks(
     `🟢 ${records.length} document chunks added to Pinecone`
   );
 }
+
+//  Delete all chunks of a document
+
+export async function deleteDocumentChunks(documentId) {
+  await knowledgeIndex.deleteMany({
+    filter: {
+      documentId: {
+        $eq: documentId,
+      },
+    },
+  });
+
+  console.log(
+    `🗑️ Deleted existing chunks for: ${documentId}`
+  );
+}
+
+//  Delete a single knowledge record
+export async function deleteKnowledgeRecord(recordId) {
+  await knowledgeIndex.deleteOne({id:recordId});
+
+  console.log(
+    `🗑️ Deleted knowledge record: ${recordId}`
+  );
+}

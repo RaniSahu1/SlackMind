@@ -5,7 +5,7 @@ import {
 } from "./services/documentService.js";
 
 import {
-  addDocumentChunks,
+  addDocumentChunks,deleteDocumentChunks,
 } from "./services/knowledgeService.js";
 
 const pdfText =
@@ -23,7 +23,7 @@ console.log(
   `\n📄 PDF extracted successfully: ${pdfText.length} characters`
 );
 
-const chunks = createChunks(pdfText, 500);
+const chunks = createChunks(pdfText, 1000,200);
 
 console.log(
   `🧩 Total chunks: ${chunks.length}`
@@ -47,3 +47,7 @@ await addDocumentChunks(
 console.log(
   "✅ PDF successfully added to Pinecone"
 );
+
+// await deleteDocumentChunks(
+//   "reactjs-guide"
+// );

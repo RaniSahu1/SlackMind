@@ -28,18 +28,22 @@ export async function readPdfFile(filePath) {
 
 export function createChunks(
   text,
-  chunkSize = 500
+  chunkSize = 1000,
+  overlap = 200
 ) {
   const chunks = [];
 
-  for (
-    let i = 0;
-    i < text.length;
-    i += chunkSize
-  ) {
+  let start = 0;
+
+  while (start < text.length) {
+    const end = start + chunkSize;
+
     chunks.push(
-      text.slice(i, i + chunkSize)
+      text.slice(start, end)
     );
+
+    //Move forward while keeping the overlap from the previous chunk
+    start += chunkSize - overlap;
   }
 
   return chunks;
