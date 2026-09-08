@@ -20,5 +20,8 @@
     "dotenv": "^17.4.2",
     "pdf-parse": "^2.4.5",
     "redis": "^6.2.1"
+  },
+  "optionalDependencies": {
+    "@napi-rs/canvas-linux-x64-gnu": "^1.0.8"
   }
 }
