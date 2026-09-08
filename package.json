@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@napi-rs/canvas": "^1.0.8",
     "@pinecone-database/pinecone": "^8.2.0",
     "@slack/bolt": "^4.4.0",
     "@vercel/slack-bolt": "^1.6.5",
