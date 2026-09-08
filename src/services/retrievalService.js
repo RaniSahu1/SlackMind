@@ -86,11 +86,36 @@ console.log(
   `🌲 Pinecone API call: ${Date.now() - pineconeStart}ms`
 );
 
-  const hits = results.result.hits;
+//   const hits = results.result.hits;
+
+// const filteredHits = hits.filter(
+//   (hit) => (hit._score ?? 0) >= 0.50
+// );
+
+const hits = results.result.hits || [];
+
+console.log(
+  "🌲 Raw Pinecone hits:",
+  hits.map((hit) => ({
+    id: hit.id,
+    score: hit._score,
+    text: hit.fields?.text,
+    type: hit.fields?.type,
+    visibility: hit.fields?.visibility,
+    allowedUsers: hit.fields?.allowedUsers,
+    allowedChannels: hit.fields?.allowedChannels,
+  }))
+);
 
 const filteredHits = hits.filter(
   (hit) => (hit._score ?? 0) >= 0.20
 );
+
+console.log(
+  "🎯 Hits after score filter:",
+  filteredHits.length
+);
+
 
 await setCachedKnowledge(
   query,

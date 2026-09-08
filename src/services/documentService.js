@@ -1,5 +1,7 @@
 import fs from "fs/promises";
 
+import axios from "axios";
+
 import { PDFParse } from "pdf-parse";
 
 export async function readTextFile(filePath) {
@@ -47,4 +49,38 @@ export function createChunks(
   }
 
   return chunks;
+}
+
+export async function downloadSlackFile(
+  fileUrl,
+  botToken,
+  outputPath
+) {
+  const response = await axios.get(fileUrl, {
+    responseType: "arraybuffer",
+
+    headers: {
+      Authorization: `Bearer ${botToken}`,
+    },
+
+    beforeRedirect: (options) => {
+      if (
+        options.protocol === "https:" &&
+        options.hostname === "slackmindgroup.slack.com"
+      ) {
+        options.headers = {
+          ...options.headers,
+          Authorization: `Bearer ${botToken}`,
+        };
+      }
+    },
+  });
+
+  await fs.writeFile(outputPath, response.data);
+
+  console.log(
+    `📥 PDF downloaded: ${outputPath}`
+  );
+
+  return outputPath;
 }

@@ -64,3 +64,24 @@ export async function deleteKnowledgeRecord(recordId) {
     `🗑️ Deleted knowledge record: ${recordId}`
   );
 }
+
+
+export async function findKnowledge(query) {
+  const results = await knowledgeIndex.searchRecords({
+    query: {
+      topK: 5,
+      inputs: {
+        text: query,
+      },
+    },
+    fields: [
+      "text",
+      "type",
+      "visibility",
+      "allowedUsers",
+      "allowedChannels",
+    ],
+  });
+
+  return results.result.hits || [];
+}

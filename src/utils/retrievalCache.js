@@ -69,3 +69,34 @@ export async function setCachedKnowledge(
     );
   }
 }
+
+export async function invalidateRetrievalCache(
+  userId,
+  channelId
+) {
+  try {
+    const pattern = `retrieval:${userId}:${channelId}:*`;
+
+    for await (
+      const keys of redisClient.scanIterator({
+        MATCH: pattern,
+        COUNT: 100,
+      })
+    ) {
+      const keyList = Array.isArray(keys) ? keys : [keys];
+
+      for (const key of keyList) {
+        if (key) {
+          await redisClient.del(key);
+        }
+      }
+    }
+
+    console.log("🧹 Retrieval cache invalidated");
+  } catch (error) {
+    console.error(
+      "⚠️ Retrieval cache invalidation error:",
+      error
+    );
+  }
+}

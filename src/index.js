@@ -3,10 +3,9 @@ import { connectRedis } from "./config/redis.js";
 
 import "./slack/events.js";
 
-// 🆕 NEW — Pinecone connection test
-import { knowledgeIndex } from "./config/pinecone.js";
 
 console.log("🟢 Pinecone index configured");
+
 
 (async () => {
    await connectRedis();
