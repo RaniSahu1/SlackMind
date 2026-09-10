@@ -18,7 +18,7 @@
     "@vercel/slack-bolt": "^1.6.5",
     "axios": "^1.20.0",
     "dotenv": "^17.4.2",
-    "pdf-parse": "^2.4.5",
+    "pdf-parse": "^1.1.4",
     "redis": "^6.2.1"
   },
   "optionalDependencies": {

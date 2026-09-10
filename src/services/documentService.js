@@ -2,7 +2,8 @@ import fs from "fs/promises";
 
 import axios from "axios";
 
-import { PDFParse } from "pdf-parse";
+// import { PDFParse } from "pdf-parse";
+import pdf from "pdf-parse";
 
 export async function readTextFile(filePath) {
   const content = await fs.readFile(
@@ -16,14 +17,7 @@ export async function readTextFile(filePath) {
 //  Read text from PDF
 export async function readPdfFile(filePath) {
   const buffer = await fs.readFile(filePath);
-
-  const parser = new PDFParse({
-    data: buffer,
-  });
-
-  const result = await parser.getText();
-
-  await parser.destroy();
+  const result = await pdf(buffer);
 
   return result.text;
 }
