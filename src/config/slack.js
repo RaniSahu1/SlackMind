@@ -8,6 +8,7 @@ const slackApp = new App({
   token: env.slackBotToken,
   signingSecret: env.slackSigningSecret,
   receiver,
+  deferInitialization: true,
 });
 
 export default slackApp;

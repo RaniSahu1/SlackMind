@@ -9,6 +9,7 @@ console.log("🟢 Pinecone index configured");
 
 (async () => {
    await connectRedis();
+   await slackApp.init();
   await slackApp.start(3000);
 
   console.log("⚡ SlackMind is running on port 3000");
