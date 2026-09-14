@@ -1,4 +1,4 @@
-// 🆕 NEW
+
 import "dotenv/config";
 
 const env = {
