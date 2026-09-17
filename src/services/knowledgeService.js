@@ -16,17 +16,28 @@ export async function addKnowledge(text, metadata = {}) {
 
 //  Add document chunks to Pinecone
 
+// Add document chunks to Pinecone
 export async function addDocumentChunks(
   chunks,
   metadata = {}
 ) {
-  const records = chunks.map(
+  // Remove empty or whitespace-only chunks
+  const validChunks = chunks
+    .map((chunk) => String(chunk || "").trim())
+    .filter((chunk) => chunk.length > 0);
+
+  // Stop before sending empty records to Pinecone
+  if (validChunks.length === 0) {
+    throw new Error(
+      "No readable text found in this PDF. It may be scanned or image-based."
+    );
+  }
+
+  const records = validChunks.map(
     (chunk, index) => ({
       _id: `${metadata.documentId || "document"}-chunk-${index}`,
       text: chunk,
-
       ...metadata,
-
       chunkIndex: index,
     })
   );
