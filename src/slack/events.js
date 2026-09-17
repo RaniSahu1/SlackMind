@@ -88,8 +88,7 @@ if (message.files?.length) {
         const safeFileName =
           file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
 
-        const filePath =
-          `./${safeFileName}`;
+        const filePath = `/tmp/${safeFileName}`;
 
         console.log(
           `📥 Downloading PDF: ${file.name}`
