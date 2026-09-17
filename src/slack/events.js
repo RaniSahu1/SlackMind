@@ -30,37 +30,62 @@ slackApp.message(async ({ message, say }) => {
   return;
 }
 
-  // Respond only when SlackMind is mentioned
+// --------------------------------------------------
+// Message information and reply decision
+// --------------------------------------------------
+
 const botMention = "<@U0BS37CB2CC>";
 
-if (!message.text.includes(botMention)) {
-  return;
-}
-
-  const conversationId = `${message.channel}:${message.thread_ts || message.ts}`;
 const userId = message.user;
 const channelId = message.channel;
 
-const rateLimit =
-  await checkRateLimit(userId);
+const conversationId =
+  `${channelId}:${message.thread_ts || message.ts}`;
 
-console.log(
-  "🚦 Rate limit:",
-  rateLimit
-);
+const isBotMentioned =
+  message.text?.includes(botMention);
 
-if (!rateLimit.allowed) {
-  await say({
-    text:
-      "You have reached the request limit. Please try again in a minute.",
-    thread_ts:
-      message.thread_ts || message.ts,
-  });
+const isInThread =
+  Boolean(message.thread_ts);
 
+const shouldReply =
+  !message.bot_id &&
+  (isBotMentioned || isInThread);
+
+// --------------------------------------------------
+// Clean and save every user message
+// --------------------------------------------------
+
+const cleanMessage =
+  message.text?.replace(/<@[^>]+>/g, "").trim() || "";
+
+const userMessage = cleanMessage;
+
+// Ignore completely empty events.
+// Allow PDF-only uploads to continue.
+if (!cleanMessage && !message.files?.length) {
   return;
 }
 
-  const userMessage = message.text.replace(/<@[^>]+>/g, "").trim();
+// Save only actual text messages in Redis.
+// Do not save an empty message for PDF-only uploads.
+if (cleanMessage) {
+  await addMessage(
+    conversationId,
+    "user",
+    userMessage
+  );
+
+  console.log(
+    "💾 User message saved in Redis"
+  );
+}
+
+// Normal root message: save only, no reply.
+// PDF uploads must continue even without mention.
+if (!shouldReply && !message.files?.length) {
+  return;
+}
 
 
 // --------------------------------------------------
@@ -164,6 +189,29 @@ if (message.files?.length) {
 
     return;
   }
+}
+
+// --------------------------------------------------
+// Rate limit only when bot should reply
+// --------------------------------------------------
+
+const rateLimit =
+  await checkRateLimit(userId);
+
+console.log(
+  "🚦 Rate limit:",
+  rateLimit
+);
+
+if (!rateLimit.allowed) {
+  await say({
+    text:
+      "You have reached the request limit. Please try again in a minute.",
+    thread_ts:
+      message.thread_ts || message.ts,
+  });
+
+  return;
 }
 
   // --------------------------------------------------
@@ -450,8 +498,7 @@ if (!recordId) {
 }
 
   try {
-// Save user's message in Redis
-   await addMessage(conversationId, "user", userMessage);
+
 //Get conversation history
     const historyStart = Date.now();
 
@@ -461,14 +508,7 @@ const conversationHistory =
 console.log(
   `🧠 Redis history: ${Date.now() - historyStart}ms`
 );
-    const retrievalQuery = conversationHistory
-  .slice(-4)
-  .map(
-    (message) =>
-      `${message.role}: ${message.content}`
-  )
-  .join("\n");
-
+    
 // Search relevant knowledge
 
 
