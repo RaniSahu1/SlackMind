@@ -81,9 +81,43 @@ if (cleanMessage) {
   );
 }
 
-// Normal root message: save only, no reply.
-// PDF uploads must continue even without mention.
-if (!shouldReply && !message.files?.length) {
+// --------------------------------------------------
+// Automatically store normal Slack messages as knowledge
+// --------------------------------------------------
+
+if (
+  !shouldReply &&
+  !message.files?.length &&
+  cleanMessage &&
+  !message.bot_id
+) {
+  try {
+    await addKnowledge(cleanMessage, {
+      type: "slack_message",
+      visibility: "private",
+      allowedUsers: [],
+      allowedChannels: [channelId],
+      source: "slack",
+      sourceMessageId: message.ts,
+      sourceUserId: userId,
+    });
+
+    await invalidateRetrievalCache(
+      userId,
+      channelId
+    );
+
+    console.log(
+      "📚 Normal Slack message added to knowledge:",
+      cleanMessage
+    );
+  } catch (error) {
+    console.error(
+      "❌ Failed to store Slack message as knowledge:",
+      error
+    );
+  }
+
   return;
 }
 
